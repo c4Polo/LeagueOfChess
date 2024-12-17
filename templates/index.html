@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Game</title>
+    <style>
+        table {
+            border-collapse: collapse;
+        }
+        td {
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            border: 1px solid black;
+            cursor: pointer;
+        }
+        .selected {
+            background-color: yellow;
+        }
+        .gray {
+            background-color: gray;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chess Game</h1>
+    <table id="board">
+        <!-- Board will be populated by JavaScript -->
+    </table>
+    <form id="moveForm" action="{{ url_for('move') }}" method="post" style="display: none;">
+        <input type="hidden" id="start_x" name="start_x">
+        <input type="hidden" id="start_y" name="start_y">
+        <input type="hidden" id="end_x" name="end_x">
+        <input type="hidden" id="end_y" name="end_y">
+        <input type="hidden" id="piece_type" name="piece_type">
+    </form>
+    <script>
+        let startSquare = null;
+        let endSquare = null;
+        let selectedPiece = null;
+
+        function updateBoard() {
+            fetch('/board_state')
+                .then(response => response.json())
+                .then(data => {
+                    const board = data.board;
+                    const boardTable = document.getElementById('board');
+                    boardTable.innerHTML = '';
+                    board.forEach((row, rowIndex) => {
+                        const tr = document.createElement('tr');
+                        row.split(' ').forEach((cell, colIndex) => {
+                            const td = document.createElement('td');
+                            td.textContent = cell;
+                            td.addEventListener('click', () => handleCellClick(rowIndex, colIndex, cell));
+                            if (cell === 'G' || cell === 'g') {
+                                td.classList.add('gray');
+                            }
+                            if (startSquare && startSquare.row === rowIndex && startSquare.col === colIndex) {
+                                td.classList.add('selected');
+                            }
+                            tr.appendChild(td);
+                        });
+                        boardTable.appendChild(tr);
+                    });
+                });
+        }
+
+        function handleCellClick(row, col, cell) {
+            if (!startSquare) {
+                startSquare = { row, col };
+                selectedPiece = cell;
+                document.getElementById('board').rows[row].cells[col].classList.add('selected');
+            } else if (!endSquare) {
+                endSquare = { row, col };
+                document.getElementById('board').rows[row].cells[col].classList.add('selected');
+                submitMove();
+            }
+        }
+
+        function submitMove() {
+            document.getElementById('start_x').value = startSquare.row;
+            document.getElementById('start_y').value = startSquare.col;
+            document.getElementById('end_x').value = endSquare.row;
+            document.getElementById('end_y').value = endSquare.col;
+            document.getElementById('piece_type').value = selectedPiece;
+            document.getElementById('moveForm').submit();
+            resetSelection();
+        }
+
+        function resetSelection() {
+            startSquare = null;
+            endSquare = null;
+            selectedPiece = null;
+            const selectedCells = document.querySelectorAll('.selected');
+            selectedCells.forEach(cell => cell.classList.remove('selected'));
+        }
+
+        // Update the board every second
+        setInterval(updateBoard, 1000);
+
+        // Initial board update
+        updateBoard();
+    </script>
+</body>
+</html>
