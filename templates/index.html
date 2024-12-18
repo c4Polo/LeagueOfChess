@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chess Game</title>
     <style>
+        /* Add to existing styles */
+        .new-game-button {
+            margin: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        .new-game-button:hover {
+            background-color: #45a049;
+        }
         table {
             border-collapse: collapse;
         }
@@ -25,6 +39,9 @@
 </head>
 <body>
     <h1>Chess Game</h1>
+    <form action="{{ url_for('new_game') }}" method="post">
+        <button type="submit" class="new-game-button">New Game</button>
+    </form>
     <table id="board">
         <!-- Board will be populated by JavaScript -->
     </table>
